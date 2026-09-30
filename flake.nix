@@ -20,13 +20,13 @@
           systems = lib.systems.flakeExposed;
 
           imports =
-            with flake-parts.flakeModules;
             [
-              modules
-              flakeModules
-
               ./.nix/modules/flake-parts/persystem-containers.nix
+
+              flake-parts.flakeModules.modules
             ];
+
+          flake.modules.nixos = import ./.nix/modules/nixos/default.nix;
 
           perSystem =
             { self', pkgs, ... }:
@@ -53,6 +53,7 @@
                     pkgs.dockerTools.buildLayeredImage
                       {
                         name = "spacebar-webrtc-pion";
+
                         tag =
                           builtins.replaceStrings
                             [ "+" ]
@@ -90,9 +91,25 @@
 
               checks =
                 {
-                  sdp = self'.packages.medooze-webrtc-sdp;
-                  webrtc = self'.packages.pion-webrtc-sfu;
-                  container = self'.containers.docker.pion-webrtc;
+                  packages =
+                    pkgs.runCommand
+                      "pion-webrtc--test-packages"
+                      {
+                        inherit (self'.packages)
+                          pion-webrtc-sfu
+                          medooze-webrtc-sdp
+                          ;
+                      }
+                      "touch $out";
+
+                  containers =
+                    pkgs.runCommand
+                      "pion-webrtc--test-containers"
+                      {}
+                      /* bash */
+                      ''
+                        test -f "${self'.containers.docker.pion-webrtc}" && touch $out
+                      '';
                 };
             };
         }

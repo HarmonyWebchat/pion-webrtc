@@ -1,0 +1,8 @@
+# temporary stub
+{ ... }:
+{
+  imports =
+    [
+      # ./?.nix
+    ];
+}
