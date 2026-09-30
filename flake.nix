@@ -15,7 +15,7 @@
     flake-parts.lib.mkFlake
       { inherit inputs; }
       (
-        { lib, ... }:
+        { lib, config, ... }:
         {
           systems = lib.systems.flakeExposed;
 
@@ -26,7 +26,8 @@
               flake-parts.flakeModules.modules
             ];
 
-          flake.modules.nixos = import ./.nix/modules/nixos/default.nix;
+          flake.modules.nixos.default = import ./.nix/modules/nixos/default.nix;
+          flake.nixosModules = config.flake.modules.nixos;
 
           perSystem =
             { self', pkgs, ... }:
